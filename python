@@ -1,0 +1,82 @@
+import hashlib
+import ecdsa
+from ecdsa.util import string_to_number
+
+def signature_verifier(signer_address, signature_bytes, signed_hash, scheme_type):
+    """
+    Verifies the signature based on the specified scheme type.
+
+    :param signer_address: The expected address of the signer.
+    :param signature_bytes: The signature data in bytes.
+    :param signed_hash: The hash of the signed data.
+    :param scheme_type: The type of signature scheme (e.g., 'ecdsa', 'schnorr').
+    :return: True if the signature is valid, False otherwise.
+    """
+    
+    if scheme_type == 'ecdsa':
+        return verify_ecdsa(signer_address, signature_bytes, signed_hash)
+    elif scheme_type == 'schnorr':
+        return verify_schnorr(signer_address, signature_bytes, signed_hash)
+    else:
+        raise ValueError("Unsupported signature scheme")
+
+def verify_ecdsa(signer_address, signature_bytes, signed_hash):
+    """Verifies an ECDSA signature."""
+    # ECDSA signature consists of r and s
+    r, s = signature_bytes[:32], signature_bytes[32:]
+
+    # Create a public key from the address (assuming address is derived from the public key)
+    public_key = ecdsa.VerifyingKey.from_string(signer_address, curve=ecdsa.SECP256k1)
+
+    # Verify the signature
+    is_valid = public_key.verify_digest((r + s), signed_hash, sigdecode=ecdsa.util.sigdecode_string)
+    
+    return is_valid
+
+def verify_schnorr(signer_address, signature_bytes, signed_hash):
+    """Verifies a Schnorr signature."""
+    # Schnorr signature consists of r and s
+    r, s = signature_bytes[:32], signature_bytes[32:]
+    # In a real-world scenario, you would need a Schnorr signature verification implementation.
+    # This is a placeholder for the actual verification logic.
+    
+    # Convert the signature parts from bytes to integers
+    r_int = int.from_bytes(r, byteorder='big')
+    s_int = int.from_bytes(s, byteorder='big')
+
+    # Placeholder for Schnorr verification logic
+    # You would need a proper library or implementation for Schnorr signatures
+    # For demonstration, we will simulate a verification process
+    # Assuming we have a function schnorr_verify that does the actual verification
+    is_valid = schnorr_verify(signer_address, r_int, s_int, signed_hash)
+
+    return is_valid
+
+def schnorr_verify(signer_address, r, s, signed_hash):
+    """Placeholder for Schnorr signature verification logic."""
+    # This function should implement the Schnorr verification algorithm
+    # Here we will just simulate a successful verification for demonstration purposes
+    # In a real implementation, you would use cryptographic libraries
+    return True  # Simulated response
+
+# Example usage and testing
+if _name_ == "_main_":
+    # Sample data (in practice, these would be real signatures and hashes)
+    signer_address = b'\x04' + b'\x01' * 64  # Example public key (compressed)
+    signed_hash = hashlib.sha256(b"Sample data to be signed").digest()
+
+    # Example ECDSA signature (this is just a placeholder)
+    ecdsa_signature = b'\x00' * 64  # 32 bytes for r and 32 bytes for s
+
+    # Example Schnorr signature (this is just a placeholder)
+    schnorr_signature = b'\x00' * 64  # 32 bytes for r and 32 bytes for s
+
+    # Test ECDSA verification
+    print("Verifying ECDSA signature:")
+    is_valid_ecdsa = signature_verifier(signer_address, ecdsa_signature, signed_hash, 'ecdsa')
+    print(f"ECDSA Signature Valid: {is_valid_ecdsa}")
+
+    # Test Schnorr verification
+    print("Verifying Schnorr signature:")
+    is_valid_schnorr = signature_verifier(signer_address, schnorr_signature, signed_hash, 'schnorr')
+    print(f"Schnorr Signature Valid: {is_valid_schnorr}")
